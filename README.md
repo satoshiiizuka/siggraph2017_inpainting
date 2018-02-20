@@ -55,7 +55,7 @@ on the subject. The `torch-opencv` is OpenCV bindings for LuaJit+Torch, which ca
 First, download the model by running the download script:
 
 ```
-sh download_model.sh
+bash download_model.sh
 ```
 
 Basic usage is:
