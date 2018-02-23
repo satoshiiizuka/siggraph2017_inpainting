@@ -31,7 +31,6 @@ cmd:option( '--nopostproc',       false,        'Disable post-processing' )
 local opt = cmd:parse(arg or {})
 print(opt)
 assert( opt.input ~= 'none' )
-assert( opt.mask ~= 'none' )
 print( 'Loding model...' )
 
 -- load Completion Network
@@ -46,8 +45,24 @@ end
 
 -- load data
 local I = image.load( opt.input )
-local M = load_image_gray( opt.mask )
-assert( I:size(2) == M:size(2) and I:size(3) == M:size(3) )
+local M = torch.Tensor()
+if opt.mask~='none' then
+   M = load_image_gray( opt.mask )
+   assert( I:size(2) == M:size(2) and I:size(3) == M:size(3) )
+else
+   -- generate random holes
+   M = torch.Tensor( 1, I:size(2), I:size(3) ):fill(0)
+   local nHoles = torch.random( 2, 4 )
+	for i=1,nHoles do
+		local mask_w = torch.random( 32, 128 )
+		local mask_h = torch.random( 32, 128 )
+		local px = torch.random(1, I:size(3)-mask_w-1)
+		local py = torch.random(1, I:size(2)-mask_h-1)
+		local R = {{},{py,py+mask_h},{px,px+mask_w}}
+		M[R]:fill(1)
+	end 
+end
+
 local hwmax = math.max( I:size(2), I:size(3) )
 if hwmax > opt.maxdim then
 	I = image.scale( I, string.format('*%d/%d',opt.maxdim,hwmax) )
@@ -101,6 +116,8 @@ if not opt.nopostproc then
 end
 
 -- save output
+for j=1,3 do I[j]:add( datamean[j] ) end
+image.save('input.png', I)
 image.save('out.png', out)
 
 print('Done.')

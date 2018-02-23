@@ -63,7 +63,7 @@ Basic usage is:
 ```
 th inpaint.lua --input <input_image> --mask <mask_image>
 ```
-The mask is a binary image (1 for pixels to be completed, 0 otherwise) and should be the same size as the input image.
+The mask is a binary image (1 for pixels to be completed, 0 otherwise) and should be the same size as the input image. If the mask is not specified, a mask with randomly generated holes will be used.
 
 Other options:
 
