@@ -1,8 +1,15 @@
-# [Globally and Locally Consistent Image Completion](http://hi.cs.waseda.ac.jp/~iizuka/projects/completion/)
+# [Globally and Locally Consistent Image Completion](http://iizuka.cs.tsukuba.ac.jp/projects/completion/)
 
-[Satoshi Iizuka](http://hi.cs.waseda.ac.jp/~iizuka/index_eng.html), [Edgar Simo-Serra](http://hi.cs.waseda.ac.jp/~esimo/), [Hiroshi Ishikawa](http://www.f.waseda.jp/hfs/indexE.html)
+[Satoshi Iizuka](http://iizuka.cs.tsukuba.ac.jp/index_eng.html), [Edgar Simo-Serra](https://esslab.jp/~ess/), [Hiroshi Ishikawa](http://www.f.waseda.jp/hfs/indexE.html)
 
 ![Teaser Image](teaser.png)
+
+## News
+**09/17/2020 Update:** We have released the following two models:
+- `completionnet_places2_freeform.t7`: An image completion model trained with free-form holes on the [Places2 dataset](http://places2.csail.mit.edu/), which will work better than the model trained with rectangular holes, even without post-processing. We used a part of the [context encoder [Pathak et al. 2016]](https://github.com/pathak22/context-encoder) implementation to generate the random free-form holes for training.
+- `completionnet_celeba.t7`: A face completion model trained with rectangular holes on the [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html). This model was trained on face images with the smallest edges in the [160, 178], and thus it will work best on images of similar sizes.
+
+These models can be downloaded via `download_model.sh`.
 
 ## Overview
 
@@ -17,7 +24,7 @@ We learn to inpaint missing regions with a deep convolutional network.
 Our network completes images of arbitrary resolutions by filling in
 missing regions of any shape. We use global and local context discriminators
 to train the completion network to provide both locally and globally consistent results.
-See our [project page](http://hi.cs.waseda.ac.jp/~iizuka/projects/completion/) for more detailed information.
+See our [project page](http://iizuka.cs.tsukuba.ac.jp/projects/completion/) for more detailed information.
 
 ## License
 
@@ -29,11 +36,11 @@ See our [project page](http://hi.cs.waseda.ac.jp/~iizuka/projects/completion/) f
   of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/ or
   send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-  Satoshi Iizuka, Waseda University
-  iizuka@aoni.waseda.jp, http://hi.cs.waseda.ac.jp/~iizuka/index_eng.html
+  Satoshi Iizuka, University of Tsukuba
+  iizuka@cs.tsukuba.ac.jp, http://iizuka.cs.tsukuba.ac.jp/index_eng.html
   
   Edgar Simo-Serra, Waseda University
-  esimo@aoni.waseda.jp, http://hi.cs.waseda.ac.jp/~esimo/
+  ess@waseda.jp, https://esslab.jp/~ess/
 ```
 
 
@@ -43,16 +50,18 @@ See our [project page](http://hi.cs.waseda.ac.jp/~iizuka/projects/completion/) f
 - [nn](https://github.com/torch/nn)
 - [image](https://github.com/torch/image)
 - [nngraph](https://github.com/torch/nngraph)
-- [torch-opencv](https://github.com/VisionLabs/torch-opencv) (optional, but required for post-processing)
+- [torch-opencv](https://github.com/VisionLabs/torch-opencv) (optional, required for post-processing)
 
 The packages of `nn`, `image`, and `nngraph` should be a part of a standard Torch7 install.
 For information on how to install Torch7 please see the [official torch documentation](http://torch.ch/docs/getting-started.html)
 on the subject. The `torch-opencv` is OpenCV bindings for LuaJit+Torch, which can be installed via 
 `luarocks install cv` after installing OpenCV 3.1. Please see the [instruction page](https://github.com/VisionLabs/torch-opencv/wiki/Installation) for more detailed information.
 
+**17/09/2020 Note:** If you fail to install Torch7 with current GPUs, please try the [self-contained Torch installation repository (unofficial)]( https://github.com/nagadomi/distro) by [@nadadomi](https://github.com/nagadomi), which supports CUDA10.1, Volta, and Turing.
+
 ## Usage
 
-First, download the model by running the download script:
+First, download the models by running the download script:
 
 ```
 bash download_model.sh
@@ -67,9 +76,10 @@ The mask is a binary image (1 for pixels to be completed, 0 otherwise) and shoul
 
 Other options:
 
+- `--model`: Model to be used. Defaults to 'completionnet_places2_freeform.t7'.
 - `--gpu`: Use GPU for the computation. [cunn](https://github.com/torch/cunn) is required to use this option. Defaults to false.
-- `--maxdim`: Long edge dimension of the input image. Defaults to 500.
-- `--nopostproc`: Disable the post-processing. Defaults to false. If you fail to install the `torch-opencv`, use this option to avoid using the package.
+- `--maxdim`: Long edge dimension of the input image. Defaults to 600.
+- `--postproc`: Perform the post-processing. Defaults to false. If you fail to install the `torch-opencv`, do not use this option to avoid using the package.
 
 For example:
 
@@ -79,9 +89,8 @@ th inpaint.lua --input example.png --mask example_mask.png
 
 ### Best Performance
 
-- This model was trained on the [Places2 dataset](http://places2.csail.mit.edu/) and thus best performance is for natural outdoor images.
-- While the model works on images of any size with arbitrary holes, we trained it on images with the smallest edges in the [256, 384] pixel range and random holes in the [96, 128] pixel range. Our model will work best
-on images with holes of those sizes.
+- The Places models were trained on the [Places2 dataset](http://places2.csail.mit.edu/) and thus best performance is for natural outdoor images.
+- While the Places2 models work on images of any size with arbitrary holes, we trained them on images with the smallest edges in the [256, 384] pixel range and random holes in the [96, 128] pixel range. Our models will work best on images with holes of those sizes.
 - Significantly large holes or extrapolation when the holes are at the border of images may fail to be filled in due to limited spatial support of the model.
 
 ### Notes

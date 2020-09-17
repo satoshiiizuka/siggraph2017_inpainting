@@ -6,11 +6,11 @@
    of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/ or
    send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-   Satoshi Iizuka, Waseda University
-   iizuka@aoni.waseda.jp, http://hi.cs.waseda.ac.jp/~iizuka/index_eng.html
+   Satoshi Iizuka, University of Tsukuba
+   iizuka@cs.tsukuba.ac.jp, http://iizuka.cs.tsukuba.ac.jp/index_eng.html
 
   Edgar Simo-Serra, Waseda University
-  esimo@aoni.waseda.jp, http://hi.cs.waseda.ac.jp/~esimo/
+  ess@waseda.jp, https://esslab.jp/~ess/
 --]]
 
 require 'nn'
@@ -25,16 +25,17 @@ cmd:addTime()
 cmd:text()
 cmd:option( '--input',           'none',        'Input image' )
 cmd:option( '--mask',            'none',        'Mask image')
-cmd:option( '--maxdim',             500,        'Long edge dimension of an input image')
+cmd:option( '--model',           'completionnet_places2_freeform.t7',        'Model to be used')
+cmd:option( '--maxdim',             600,        'Long edge dimension of an input image')
 cmd:option( '--gpu',              false,        'Use GPU' )
-cmd:option( '--nopostproc',       false,        'Disable post-processing' )
+cmd:option( '--postproc',         false,        'Perform post-processing' )
 local opt = cmd:parse(arg or {})
 print(opt)
 assert( opt.input ~= 'none' )
-print( 'Loding model...' )
+print( 'Loading model...' )
 
 -- load Completion Network
-local data = torch.load( 'completionnet_places2.t7' )
+local data = torch.load( opt.model )
 local model    = data.model
 local datamean  = data.mean
 model:evaluate()
@@ -85,7 +86,7 @@ local res = model:forward( input ):float()[1]
 local out = Ip:cmul(torch.repeatTensor((1-M),3,1,1)) + res:cmul(torch.repeatTensor(M,3,1,1))
 
 -- perform post-processing
-if not opt.nopostproc then
+if opt.postproc then
    print('Performing post-processing...')
    local cv = require 'cv'
    require 'cv.photo'   
